@@ -62,29 +62,41 @@ When the radiometer is streaming and the dæmon is running, you should see LCM m
 Replay or Simulate
 ------------------
 
-In separate terminals (or in separate panes of a `tmux` session), start the processes for:
+If you want to use the photon flux density transform as it was recorded in an existing log, but tinker with the ambient downwelling photon flux estimator (de-spiking filter), the only downstream radiometer process you need to run is the ambient estimator. If you also want to apply a calibration to the raw data to transform it into a photon flux, you need to start both downstream processes.
 
-- the photon flux transform:
-  ```
-  /usr/bin/env python3 -m radiometer_lcmd.photon_flux_transform -c RAD1t
-  ```
+N.B.* You can find the command line for each of the radiometer processes in the `systemd` service files under `systemd/system`. If you have a user & group for mesobot on your development machine, you can install those service files and start the processes with `systemctl` the same way we do on the `tx2`.
 
-- and for the ambient downwelling photon flux estimator
+You can replay the existing log with `lcm-logplayer` or `lcm-logplayer-gui`, depending on your preferences. I recommend only replaying channels you actually need.
+
+### Ambient Estimator Only ###
+
+- In one terminal, start the process for the ambient downwelling photon flux estimator
   ```
   /usr/bin/env python -m radiometer_lcmd.ambient_downwelling_photon_flux_estimator -w 200 -s u -c RAD1fd
   ```
 
-*N.B.* You can find the command line for each of these processes in the `systemd` service files under `systemd/system`. If you have a user & group for mesobot on your development machine, you can install those service files and start the processes with `systemctl` the same way we do on the `tx2`.
+- In another terminal, start the logger (so you can unpack and analyze the data later in `python` or `matlab`).
+  ```
+  lcm-logger replay.lcmlog
+  ```
 
-If you want to save & analyze the replayed data, start `lcm-logger` in another terminal:
+- In another terminal, replay the log, but only the channels you need (at least `RAD1fd`).
+  ```
+  lcm-logplayer -e "(DQo)|(RAD1t)|(RAD1fd)" mesobot045.lcmlog
+  ```
 
-```
-lcm-logger replay.lcmlog
-```
+- Watch using `mesobot-spy` and you will see `RAD1u` at 20 Hz, once it has collected enough history.
 
-Once all the downstream processes are running, use `lcm-logplayer` or `lcm-logplayer-gui` to replay the log. If the log you are replaying already has full radiometer including the downstream filters, you will need to exclude those channels from the replay (easiest with `lcm-logplayer-gui`).
- I suggest specifying the minimum set of channels you need for the replay to reduce resource usage and clutter, e.g.:
+### Transform & Ambient Estimator ###
 
-```
-lcm-logplayer -e "(DQo)|(RAD1t)" mesobot045.lcmlog
-```
+- Do the first and second steps above for the ambient estimator only.
+
+- In another terminal, start the process for the photon flux transform:
+  ```
+  /usr/bin/env python3 -m radiometer_lcmd.photon_flux_transform -c RAD1t
+  ```
+
+- Do the last step above for the ambient estimator only, but do not let `lcm-logplayer` publish `RAD1fd` because now you have the transform process publishing it instead.
+  ```
+  lcm-logplayer -e "(DQo)|(RAD1t)" mesobot045.lcmlog
+  ```
