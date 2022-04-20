@@ -12,9 +12,14 @@ Install
 -------
 
 ```shell
-lcm-gen --python --ppath radiometer_lcmtypes radiometer_lcmtypes/*.lcm
-python3 -m pip install . # to install the lcmtypes under `PYTHONPATH`
+lcm-gen --python --ppath src/radiometer_lcmd/lcmtypes src/radiometer_lcmd/lcmtypes/*.lcm
+python3 -m pip install .
+# ^ to install the daemons and lcmtypes under `PYTHONPATH`
 ```
+
+### TO-DO ###
+
+- [ ] revise the `pip install` sources to run `lcm-gen` automagically
 
 Troubleshoot
 ------------
