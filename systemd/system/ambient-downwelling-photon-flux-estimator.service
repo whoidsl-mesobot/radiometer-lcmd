@@ -5,11 +5,11 @@ After=radiometer-photon-flux-transformer.service
 [Service]
 Type=simple
 Restart=on-failure
-RestartSec=1s
+RestartSec=3s
 User=mesobot
 Group=mesobot
 Environment="LCM_DEFAULT_URL=udpm://239.255.76.67:7667?ttl=0"
-ExecStart=/usr/bin/env python -m radiometer_lcmd.ambient_downwelling_photon_flux_estimator -w 200 -s u -c RAD1fd
+ExecStart=/usr/bin/env python3 -m radiometer_lcmd.ambient_downwelling_photon_flux_estimator -w 200 -s u -c RAD1fd
 
 [Install]
 WantedBy=default.target
