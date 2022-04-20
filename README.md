@@ -53,3 +53,33 @@ mesobot@tx2 $ sudo systemctl enable radiometer-lcmd.service
 ```
 
 When the radiometer is streaming and the dæmon is running, you should see LCM messages published on channel RAD1t & RAD1p. If the realtime filters are enabled as well, you should also see LCM messages on additional channels like RAD1u.
+
+Replay or Simulate
+------------------
+
+In separate terminals (or in separate panes of a `tmux` session), start the processes for:
+
+- the photon flux transform:
+  ```
+  /usr/bin/env python3 -m radiometer_lcmd.photon_flux_transform -c RAD1t
+  ```
+
+- and for the ambient downwelling photon flux estimator
+  ```
+  /usr/bin/env python -m radiometer_lcmd.ambient_downwelling_photon_flux_estimator -w 200 -s u -c RAD1fd
+  ```
+
+*N.B.* You can find the command line for each of these processes in the `systemd` service files under `systemd/system`. If you have a user & group for mesobot on your development machine, you can install those service files and start the processes with `systemctl` the same way we do on the `tx2`.
+
+If you want to save & analyze the replayed data, start `lcm-logger` in another terminal:
+
+```
+lcm-logger replay.lcmlog
+```
+
+Once all the downstream processes are running, use `lcm-logplayer` or `lcm-logplayer-gui` to replay the log. If the log you are replaying already has full radiometer including the downstream filters, you will need to exclude those channels from the replay (easiest with `lcm-logplayer-gui`).
+ I suggest specifying the minimum set of channels you need for the replay to reduce resource usage and clutter, e.g.:
+
+```
+lcm-logplayer -e "(DQo)|(RAD1t)" mesobot045.lcmlog
+```
