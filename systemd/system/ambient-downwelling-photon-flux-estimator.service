@@ -1,6 +1,6 @@
 [Unit]
-Description=LCM daemon for radiometer
-After=radiometer-photon-flux-transformer.service
+Description=LCM daemon to estimate ambient downwelling using radiometer
+After=radiometer-lcmd.service
 
 [Service]
 Type=simple
