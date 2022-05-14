@@ -10,7 +10,7 @@ p.add_argument('-v', '--verbose', action='count', default=0,
 p.add_argument('-V', '--version', action='version',
                version='%(prog)s 0.0.1',
                help='display version information and exit')
-p.add_argument('-c', '--channel', default='RAD1fd',
+p.add_argument('-c', '--channel', default='RAD1t',
                help='channel to listen on')
 p.add_argument('-s', '--suffix', default='u',
                help='suffix for filter output')

@@ -4,9 +4,10 @@
 """
 
 import select
-import serial
-import struct
 import time
+
+from numpy import log10
+
 import lcm
 
 from collections import deque
@@ -39,7 +40,8 @@ class AmbientDownwellingPhotonFluxEstimator:
         tosort = list(self.data.copy())
         tosort.sort()
         amb = float(sum(tosort[:DEFAULT_SUM_WIDTH*SAMPLES_PER_ENSEMBLE]))
-        return max([amb, 1e-16]) # make output log10-safe
+        return max([amb, 16]) # make output log10-safe
+        # use sixteen here^ to match what would be a single timeHi count decoded
 
     def handler(self, channel, data):
         rx = floats_t.decode(data)
@@ -52,6 +54,15 @@ class AmbientDownwellingPhotonFluxEstimator:
                 print(tx.downwelling_photon_spherical_irradiance)
             tx_channel = "{0}{1}".format(channel[:4], self.suffix)
             self.lcm.publish(tx_channel, tx.encode())
+            
+            lx = floats_t()
+            lx.utime = rx.utime
+            lx.data = [log10(tx.downwelling_photon_spherical_irradiance)]
+            # TODO: consider returning 1 instead of log10(16) to emphasize RAD1t out of bounds
+            lx.length = len(lx.data)
+            lx_channel = "log{0}{1}".format(channel[:4], self.suffix)
+            self.lcm.publish(lx_channel, lx.encode())
+
         elif self.verbose > -1:
             print("window not full: {0} < {1}".format(len(self.data),
                 self.data.maxlen))
