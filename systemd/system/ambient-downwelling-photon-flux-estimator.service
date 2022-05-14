@@ -9,7 +9,7 @@ RestartSec=3s
 User=mesobot
 Group=mesobot
 Environment="LCM_DEFAULT_URL=udpm://239.255.76.67:7667?ttl=0"
-ExecStart=/usr/bin/env python3 -m radiometer_lcmd.ambient_downwelling_photon_flux_estimator -w 200 -s u -c RAD1fd
+ExecStart=/usr/bin/env python3 -m radiometer.ambient_downwelling_photon_flux_estimator -w 200 -s u -c RAD1t
 
 [Install]
 WantedBy=default.target
