@@ -23,6 +23,7 @@ SAMPLES_PER_ENSEMBLE = 50
 DEFAULT_SORT_WIDTH = 200 # 200 ensembles @ 20 Hz ==> 10s
 DEFAULT_SUM_WIDTH = 20 # 20 ensembles @ 20 Hz ==> 1s
 
+#TODO: Change default suffix to 'a' for ambient (and leave 'b' for biolumiescent)
 
 class AmbientDownwellingPhotonFluxEstimator:
 
@@ -60,7 +61,7 @@ class AmbientDownwellingPhotonFluxEstimator:
             lx.data = [log10(tx.downwelling_photon_spherical_irradiance)]
             # TODO: consider returning 1 instead of log10(16) to emphasize RAD1t out of bounds
             lx.length = len(lx.data)
-            lx_channel = "log{0}{1}".format(channel[:4], self.suffix)
+            lx_channel = "{0}{1}".format(channel[:4], 'log')
             self.lcm.publish(lx_channel, lx.encode())
 
         elif self.verbose > -1:
