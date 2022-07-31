@@ -54,7 +54,7 @@ class SerialDaemon:
             else:
                 suffix = 'r'
                 pkt_size = 0
-            self.handle_pkt(suffix, pkt_size)
+        self.handle_pkt(suffix, pkt_size)
 
     def handle_pkt(self, suffix='r', sz=0):
         rx = self.serial.read(sz)
