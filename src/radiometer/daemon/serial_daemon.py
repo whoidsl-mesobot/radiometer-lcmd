@@ -41,8 +41,9 @@ class SerialDaemon:
     def serial_handler(self):
         """Receive data on serial port and send on LCM."""
         pkt_size = 0
-        self.tkn.extend(self.serial.read(self.tkn.maxlen))
-        while pkt_size == 0:
+        while self.serial.in_waiting > 0 and pkt_size == 0:
+            try_bytes = max(self.tkn.maxlen - len(self.tkn), 1)
+            self.tkn.extend(self.serial.read(try_bytes))
             bsh = bytes(self.tkn)
             if bsh == bytes.fromhex('FDFDFDFD'):
                 suffix = 'o'
@@ -54,8 +55,6 @@ class SerialDaemon:
                 suffix = 'r'
                 pkt_size = 0
             self.handle_pkt(suffix, pkt_size)
-            if pkt_size == 0 and self.serial.in_waiting > 0:
-                self.tkn.extend(self.serial.read(1))
 
     def handle_pkt(self, suffix='r', sz=0):
         rx = self.serial.read(sz)
