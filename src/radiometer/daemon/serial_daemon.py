@@ -14,8 +14,9 @@ from ..lcmtypes.raw import bytes_t, floats_t
 class SerialDaemon:
     """Serial LCM daemon for radiometer."""
 
-    def __init__(self, dev='/dev/ttyUSB1', prefix='RAD'):
+    def __init__(self, dev='/dev/ttyUSB1', prefix='RAD', verbose=0):
         """Define serial and LCM interfaces, and subscribe to input."""
+        self.verbose = verbose
         self.serial = serial.Serial(dev, baudrate=38400, timeout=1)
         self.lcm = lcm.LCM()
         self.prefix = prefix + dev[-1]
@@ -26,6 +27,8 @@ class SerialDaemon:
         self.subscriptions = []
         self.subscriptions.append(self.lcm.subscribe(
             '{0}i'.format(self.prefix), self.lcm_handler))
+        if self.verbose > 0:
+            print("serial daemon initialized")
 
     def lcm_handler(self, channel, data):
         """Receive command on LCM and send over serial port.
