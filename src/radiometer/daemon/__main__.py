@@ -5,7 +5,7 @@ from .serial_daemon import SerialDaemon
 
 def main(dev="/dev/ttyUSB1", prefix='RAD', verbose=0):
     """Run as a daemon."""
-    bridge = SerialDaemon(dev, prefix)
+    bridge = SerialDaemon(dev, prefix, verbose)
     bridge.connect()
 
 
