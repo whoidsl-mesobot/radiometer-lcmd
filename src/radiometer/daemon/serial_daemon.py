@@ -87,6 +87,7 @@ class SerialDaemon:
                 self.publish(tx)
         else:
             print('tried to read {0} but only got {1}'.format(sz, len(rx)))
+        self.tkn.clear()
 
 
     def publish(self, raw, tsuffix='t', psuffix='p'):
