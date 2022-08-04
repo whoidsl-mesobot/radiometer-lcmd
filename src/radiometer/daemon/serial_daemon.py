@@ -43,6 +43,7 @@ class SerialDaemon:
         self.serial.flush()
 
 
+
     def find_valid_packet(self):
         suffix = 'r'
         while self.serial.in_waiting > 0 and suffix == 'r':
