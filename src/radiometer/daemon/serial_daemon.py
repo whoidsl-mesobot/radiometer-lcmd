@@ -30,6 +30,7 @@ class SerialDaemon:
         if self.verbose > 0:
             print("serial daemon initialized")
 
+
     def lcm_handler(self, channel, data):
         """Receive command on LCM and send over serial port.
 
@@ -41,26 +42,41 @@ class SerialDaemon:
         self.serial.write(rx.data)
         self.serial.flush()
 
-    def serial_handler(self):
-        """Receive data on serial port and send on LCM."""
-        pkt_size = 0
-        while self.serial.in_waiting > 0 and pkt_size == 0:
+
+    def find_valid_packet(self):
+        suffix = 'r'
+        while self.serial.in_waiting > 0 and suffix == 'r':
             try_bytes = max(self.tkn.maxlen - len(self.tkn), 1)
             self.tkn.extend(self.serial.read(try_bytes))
             bsh = bytes(self.tkn)
             if bsh == bytes.fromhex('FDFDFDFD'):
                 suffix = 'o'
-                pkt_size = self.data.size
             elif bsh == bytes.fromhex('FEFEFEFE'):
                 suffix = 'h'
-                pkt_size = self.heartbeat.size
             else:
                 suffix = 'r'
-                pkt_size = 0
-        self.handle_pkt(suffix, pkt_size)
+        return suffix
 
-    def handle_pkt(self, suffix='r', sz=0):
+
+    def serial_handler(self):
+        """Receive data on serial port and send on LCM."""
+        suffix = self.find_valid_packet()
+        if self.verbose > 1:
+            fmt = "found valid header token {t} for packet suffix {s}"
+            print(fmt.format(t=bytes(self.tkn), s=suffix))
+        self.handle_pkt(suffix)
+
+
+    def handle_pkt(self, suffix='r'):
+        if suffix == 'h':
+            sz = self.heartbeat.size
+        elif suffix == 'o':
+            sz = self.data.size
+        else:
+            sz = 0
+
         rx = self.serial.read(sz)
+
         if(len(rx) == sz):
             tx = bytes_t()
             tx.utime = int(time.time() * 1e6)
@@ -71,6 +87,8 @@ class SerialDaemon:
                 self.publish(tx)
         else:
             print('tried to read {0} but only got {1}'.format(sz, len(rx)))
+        self.tkn.clear()
+
 
     def publish(self, raw, tsuffix='t', psuffix='p'):
         tx = floats_t()
@@ -81,6 +99,7 @@ class SerialDaemon:
         self.lcm.publish("{0}{1}".format(self.prefix, tsuffix), tx.encode())
         tx.data = [x * 1e-4 for x in tx.data]
         self.lcm.publish("{0}{1}".format(self.prefix, psuffix), tx.encode())
+
 
     def connect(self):
         """Connect serial to LCM and loop with epoll."""
